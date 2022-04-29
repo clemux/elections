@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends
+from starlette.routing import Route, Mount
+from starlette.staticfiles import StaticFiles
+from starlette.templating import Jinja2Templates
 
 from app.db import schemas, crud
 from app.db.database import SessionLocal, Session
-
-app = FastAPI()
-
 
 def get_db():
     db = SessionLocal()
@@ -13,6 +13,19 @@ def get_db():
     finally:
         db.close()
 
+templates = Jinja2Templates(directory='website/')
+
+async def homepage(request):
+    return templates.TemplateResponse('index.html', {
+        'request': request,
+    })
+
+
+app = FastAPI(routes=[
+    Route('/index.html', homepage),
+    Route('/', homepage),
+    Mount('/static', StaticFiles(directory='website/static'), name='static')
+])
 
 @app.get('/results', response_model=schemas.CircResult)
 async def get_results(code_dept: str, code_circ: str, db: Session = Depends(get_db)):

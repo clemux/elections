@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Presidentielles premier tour</title>
+    <link rel="stylesheet" href="static/main.css">
+</head>
+<body>
+<label for="deptPicker">Departement</label>
+<input type="text" id="deptPicker" value="67">
+<label for="circPicker">Circonscription</label>
+<input type="text" id="circPicker" value="01">
+<input type="button" value="Afficher" id="showButton">
+<table id="results"></table>
+</body>
+</html>
+<script>
+    function updateTable(data) {
+        console.log(data)
+        const candidates = Object.entries(data['candidates'])
+        table = document.getElementById('results')
+        candidates.forEach(([candidate, percentage]) => {
+            newRow = table.insertRow()
+            nameCell = newRow.insertCell()
+            nameCell.appendChild(document.createTextNode(candidate))
+
+            percentageCell = newRow.insertCell()
+            percentageCell.appendChild(document.createTextNode(percentage))
+        })
+        console.log(candidates)
+    }
+
+    button = document.getElementById('showButton')
+    deptField = document.getElementById('deptPicker')
+    circField = document.getElementById('circPicker')
+    button.addEventListener('click', function () {
+        console.log(circField)
+        console.log(deptField)
+        apiData = fetch('/results?code_dept=' + deptField.value + '&code_circ=' + circField.value)
+            .then(response => response.json())
+            .then(data => updateTable(data))
+    })
+</script>
