@@ -6,35 +6,48 @@
     <link rel="stylesheet" href="static/main.css">
 </head>
 <body>
-<label for="deptPicker">Departement</label>
-<input type="text" id="deptPicker" value="67">
-<label for="circPicker">Circonscription</label>
-<input type="text" id="circPicker" value="01">
+<label for="deptInput">Departement</label>
+<input type="text" id="deptInput" value="67" class="codeInput" required pattern="[\d\d]">
+<label for="circInput">Circonscription</label>
+<input type="text" id="circInput" value="01" class="codeInput" required pattern="[\d\d]">
 <input type="button" value="Afficher" id="showButton">
 <table id="results"></table>
 </body>
 </html>
 <script>
-    function updateTable(data) {
+    async function updateTable(codeDept, codeCirc) {
+        const url = `/results?code_dept=${codeDept}&code_circ=${codeCirc}`
+        const response = await fetch(url)
+        if (!response.ok) {
+            const message = `Could not fetch data: ${response.status}`
+            throw new Error(message)
+        }
+        const data = await response.json()
         const candidates = Object.entries(data['candidates'])
-        table = document.getElementById('results')
+        const table = document.getElementById('results')
         table.innerHTML = ''
         candidates.forEach(([candidate, percentage]) => {
-            newRow = table.insertRow()
-            nameCell = newRow.insertCell()
+            const newRow = table.insertRow()
+            const nameCell = newRow.insertCell()
             nameCell.appendChild(document.createTextNode(candidate))
 
-            percentageCell = newRow.insertCell()
-            percentageCell.appendChild(document.createTextNode(percentage))
+            const percentageCell = newRow.insertCell()
+            percentageCell.appendChild(document.createTextNode(percentage.toString()))
         })
     }
 
-    button = document.getElementById('showButton')
-    deptField = document.getElementById('deptPicker')
-    circField = document.getElementById('circPicker')
+    const button = document.getElementById('showButton')
+    const deptField = document.getElementById('deptInput')
+    const circField = document.getElementById('circInput')
     button.addEventListener('click', function () {
-        apiData = fetch('/results?code_dept=' + deptField.value + '&code_circ=' + circField.value)
-            .then(response => response.json())
-            .then(data => updateTable(data))
+        updateTable(deptField.value, circField.value)
+    })
+    const inputs = document.querySelectorAll('.codeInput')
+    inputs.forEach(input => {
+        input.addEventListener('keyup', (event) => {
+            if (event.code === 'Enter') {
+                updateTable(deptField.value, circField.value)
+            }
+        })
     })
 </script>
